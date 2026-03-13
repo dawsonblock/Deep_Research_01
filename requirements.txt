@@ -1,0 +1,9 @@
+fastapi
+httpx
+numpy
+pydantic
+pydantic-settings
+uvicorn
+
+# Optional for real sandbox execution
+opensandbox
