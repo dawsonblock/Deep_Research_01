@@ -1,166 +1,115 @@
-# Research Engine Scaffold
+# Research Engine Scaffold v9
 
-A compact local scaffold for a persistent research runtime.
+A compact, persistent local scaffold for an autonomous research runtime.
 
-It includes:
+This repository provides a powerful, typed foundation for agentic memory, planning, scaling, and execution. It includes mechanisms for maintaining state, evolving artifacts over time, resolving claim conflicts natively, and safely evaluating code via sandbox harnesses.
 
-- typed artifacts with validation and scoring
-- artifact lineage and revision history
-- task and execution graphs
-- world model with claims, questions, and hypotheses
-- embedding-backed memory distillation and retrieval
-- SearXNG sidecar client for external search
-- project state, milestones, and checkpoints
-- compression and replanning loops
-- experiment planning, execution, and evaluation
-- optional LLM adapter behind a single service boundary
-- FastAPI API
+---
 
-This is a working scaffold, not a production-grade autonomous system.
+## 🚀 Key Features
 
-## Quick start
+- **Typed Artifact Engine**: Data structures (requirements, architectures, claims, code patches) with built-in validation and scoring.
+- **Lineage & Revision History**: Automatic tracking of artifact versions. Includes **Lineage Branching** (v9) to seamlessly merge multiple artifacts while preserving ancestral lineage.
+- **Task & Execution Graphs**: Directed acyclic evaluation mapping for complex multi-step generation.
+- **World Model Reasoning**: A dynamic knowledge store containing claims, questions, and hypotheses.
+- **Automatic Conflict Resolution (v9)**: Detects competing or negating claims across artifacts using embeddings (semantic clash) and polarity checks. Resolves conflicts by suppressing weaker claims or escalating ties back to the world model as manual `contested` questions.
+- **LLM-Backed Experiments (v9)**: Experiment runners benchmark project state. If an LLM (e.g. GPT-4) is connected, it explicitly handles logic validation (graph vs. linear contradiction rate); otherwise, it falls back to a deterministic arithmetic stub.
+- **OpenSandbox Integration (v8+)**: Safe sidecar execution and evaluation of patches against real GitHub repositories. Includes persistent workspace lineages and automatic repo benchmark parsing (pytest, jest, cargo, go).
+- **SearXNG Support**: External sidecar search capabilities for retrieving grounded data.
+
+---
+
+## 🛠 Quick Start
+
+Ensure you have Python 3.9+ installed.
 
 ```bash
+# 1. Setup virtual environment
 python -m venv .venv
 source .venv/bin/activate
+
+# 2. Install dependencies
 pip install -r requirements.txt
+
+# 3. Start the FastAPI server
 uvicorn backend.main:app --reload
 ```
 
-Open `http://127.0.0.1:8000/docs` for the API.
+Open `http://127.0.0.1:8000/docs` to interact with the interactive API.
 
-## Suggested flow
+### Environment Configuration (`.env`)
 
-1. `POST /projects`
-2. `POST /projects/{project_id}/bootstrap`
-3. `POST /projects/{project_id}/run-until-idle`
-4. `POST /projects/{project_id}/replan`
-5. `POST /projects/{project_id}/run-until-idle`
-6. `GET /projects/{project_id}/experiments`
-7. `GET /projects/{project_id}/artifacts`
-8. `POST /projects/{project_id}/compress`
-9. `GET /projects/{project_id}/summary`
+The scaffold operates gracefully with local deterministic fallbacks, but setting up providers unlocks true reasoning and search capabilities.
 
-## Artifact versioning
-
-Artifacts now carry:
-
-- `lineage_id`
-- `version`
-- `revision_note`
-
-You can:
-
-- revise an artifact with `POST /artifacts/revise`
-- inspect a lineage with `GET /artifacts/{artifact_id}/lineage`
-
-## Experiment loop
-
-Experiment planning creates an `experiment_plan` artifact.
-When one is produced, the runtime automatically schedules:
-
-- an `experiment_runner` node
-- an `evaluator` node
-
-Experiment runs are persisted in `experiment_runs` and exposed at:
-
-- `GET /projects/{project_id}/experiments`
-
-The default runner is deterministic and grounded in current project state. It does not execute external benchmarks or shell commands.
-
-## Optional sidecars
-
-### SearXNG
-Set `SEARXNG_BASE_URL` in `.env` if you run a SearXNG server separately.
-
-### LLM provider
-The scaffold keeps a single adapter boundary in `backend/services/llm.py`.
-Set these variables if you want model-backed operators:
-
-```bash
+```env
+# Optional: LLM configuration for intelligent operators and experiment evaluation
 LLM_PROVIDER=openai
-LLM_API_KEY=...
-LLM_MODEL=gpt-4.1-mini
+LLM_API_KEY=sk-xxxxxxxxxxx
+LLM_MODEL=gpt-4o
 EMBEDDING_PROVIDER=openai
 EMBEDDING_MODEL=text-embedding-3-small
+
+# Optional: SearXNG sidecar for web-based research
+SEARXNG_BASE_URL=http://localhost:8080
+
+# Optional: OpenSandbox connection for code testing and execution
+OPENSANDBOX_ENABLED=true
+OPEN_SANDBOX_DOMAIN=api.opensandbox.io
+OPEN_SANDBOX_API_KEY=...
+OPEN_SANDBOX_PROTOCOL=https
 ```
 
-Without those, the runtime uses deterministic local fallbacks and hash-vector embeddings.
+---
 
-## Current limits
+## 🔄 Suggested API Flow
 
-- experiment execution is still an internal project-state benchmark, not a real lab harness
-- artifact revisions are versioned, but merge/conflict resolution is still manual
-- operator planning remains heuristic even when an LLM adapter is enabled
+The scaffold interacts via a clean REST workflow. A typical run involves planning, executing up to an idle bound, evaluating, and compressing state.
 
+1. **Initialize**: `POST /projects`
+2. **Contextualize**: `POST /projects/{project_id}/bootstrap`
+3. **Execute**: `POST /projects/{project_id}/run-until-idle`
+4. **Adapt & Plan**: `POST /projects/{project_id}/replan`
+5. **Resume**: `POST /projects/{project_id}/run-until-idle`
+6. **Evaluate**: `GET /projects/{project_id}/experiments`
+7. **Inspect Output**: `GET /projects/{project_id}/artifacts`
+8. **Distill Memory**: `POST /projects/{project_id}/compress`
+9. **Final Review**: `GET /projects/{project_id}/summary`
 
-## OpenSandbox integration
+---
 
-This build now includes an optional OpenSandbox-backed harness for real experiment execution.
+## 🧬 Artifact Evolution & V9 Upgrades
 
-What it adds:
-- sandbox status endpoint: `GET /sandbox/status`
-- ad hoc sandbox execution: `POST /projects/{project_id}/sandbox/run`
-- experiment plans can carry a `job` block with `runner=opensandbox`
-- `experiment_runner` dispatches to OpenSandbox when configured, otherwise falls back cleanly
+### Artifact Versioning
+Artifacts are automatically versioned and track revisions. 
+- Modify an artifact: `POST /artifacts/revise`
+- View an artifact's tree: `GET /artifacts/{artifact_id}/lineage`
+- **[New in v9]** Merge artifacts: `POST /artifacts/merge` (Handles ≥2 parents, inheriting lineage from the dominant score).
 
-Environment variables:
-- `OPENSANDBOX_ENABLED`
-- `OPEN_SANDBOX_DOMAIN`
-- `OPEN_SANDBOX_API_KEY`
-- `OPEN_SANDBOX_PROTOCOL`
-- `OPEN_SANDBOX_TIMEOUT_SECONDS`
-- `OPEN_SANDBOX_USE_SERVER_PROXY`
-- `OPEN_SANDBOX_DEFAULT_IMAGE`
-- `OPEN_SANDBOX_PYTHON_IMAGE`
+### Automatic Multi-Agent Conflict Resolution (v9)
+When large operator networks run concurrently, artifacts may generate clashing claims (e.g. _"System is fast"_ vs _"System is slow"_). 
+The `ConflictResolutionService` automatically intervenes at creation:
+- **Dominance**: If a new claim is structurally stronger (+0.15 delta) it automatically suppresses the old claim.
+- **Escalation**: Tightly contested claims are flagged as `contested` and pushed into the World Model as a `question` for manual/LLM adjudication.
+- **Auditing**: All events are stored in the DB and accessible via `GET /projects/{project_id}/conflicts`.
 
-Notes:
-- the SDK is optional at import time; the scaffold still runs without it
-- the harness is isolated behind `backend/services/sandbox_harness.py`
-- OpenSandbox is used as a sidecar execution substrate, not merged into the control-plane core
+### Experiment Loop Upgrades (v9)
+Plans output `experiment_plan` artifacts triggering `experiment_runner` and `evaluator` nodes.
 
+Experiments now specify their validation method:
+- **`llm_benchmark`**: Leverages the LLM for deep semantic reasoning (verifying requirement coverage vs code constraints).
+- **`opensandbox`**: Dispatches the task to the secure execution harness for a live unit test or build loop.
+- **`deterministic_stub`**: Safely falls back to local arithmetic approximations if the platform is offline or un-credentialed.
 
-## Sandbox session and repo test support
+---
 
-This build adds persistent OpenSandbox session records, direct command execution, artifact materialization, and repo clone/install/test evaluation through API routes.
+## 📦 Sandbox & Repo Evaluation Capabilities
 
+This scaffold supports robust testing of actual repositories:
 
-## Persistent sandbox workspace lineage mapping
+- **Sandbox Sessions**: Creates isolated ephemeral or persistent containers.
+- **Workspace Mapping**: `current.json`, `manifest.json`, and version snapshots are actively structured in the sandbox for immediate debugging via `GET /sandbox/sessions/{session_id}/workspace-lineages`.
+- **Repo Inspection**: Analyzes source code layout before inferring the best test/install commands.
+- **Benchmark Parsing**: Scrapes `stdout` to natively detect testing success rates across Pytest, Unittest, Jest, Cargo, and Go.
 
-This version adds a stable workspace mapping from artifact lineages to sandbox filesystem paths.
-
-What it does:
-- each artifact lineage gets a persistent workspace root inside a sandbox session
-- latest revisions are written to `current.json`
-- versioned snapshots are written under `versions/vN.json`
-- a manifest is written per lineage
-
-New routes:
-- `GET /sandbox/sessions/{session_id}/workspace-lineages`
-- `POST /sandbox/sessions/{session_id}/sync-lineages`
-
-## Automatic repo benchmark parsing
-
-Repo evaluation now parses common test and benchmark output formats automatically.
-
-Current parsers include:
-- pytest
-- unittest
-- jest/vitest-style summaries
-- cargo test
-- go test
-- generic fallback parser
-
-Repo-eval responses now include:
-- `benchmark_parse`
-- parsed test counts
-- benchmark case count
-- benchmark success rate
-
-
-## v7 upgrades
-
-- repository inspection before repo profile inference
-- repo inspection API and artifact type
-- unified-diff patch synthesis with before/after snapshots
-- patch artifacts now carry `patch_text`, `diff`, and `before_content`
+---
+_Disclaimer: This backend is a foundational scaffolding for autonomous systems architecture research. It provides the datastores, execution engines, and API boundaries required to develop higher-level cognitive swarms._
