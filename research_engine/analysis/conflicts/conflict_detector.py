@@ -29,6 +29,20 @@ class Conflict:
 class ConflictDetector:
     """Detects contradictions in the knowledge graph."""
 
+    def _preview_content(self, content, max_len: int = 50) -> str:
+        """Safely extract a short text preview from a node's content."""
+        # Canonical GraphStore may store content as a dict, e.g. {"text": ...}.
+        # Normalize to string before truncating to avoid TypeError on slicing.
+        if isinstance(content, dict):
+            text = content.get("text")
+            if isinstance(text, str):
+                value = text
+            else:
+                value = str(content)
+        else:
+            value = str(content)
+        return value[:max_len]
+
     def detect_from_edges(self, store: GraphStore) -> list[Conflict]:
         """Find conflicts based on contradiction edges."""
         conflicts: list[Conflict] = []
@@ -41,11 +55,13 @@ class ConflictDetector:
                 continue
             if src and tgt:
                 severity = edge.metadata.get("weight", 0.5)
+                src_preview = self._preview_content(src.content)
+                tgt_preview = self._preview_content(tgt.content)
                 conflicts.append(Conflict(
                     claim_a_id=edge.source_id,
                     claim_b_id=edge.target_id,
                     severity=severity,
-                    details=f"'{src.content[:50]}' contradicts '{tgt.content[:50]}'",
+                    details=f"'{src_preview}' contradicts '{tgt_preview}'",
                 ))
         return conflicts
 
