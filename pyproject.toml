@@ -1,0 +1,20 @@
+[project]
+name = "research_engine"
+version = "0.1.0"
+description = "Autonomous research platform with self-improving operators"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "pydantic",
+    "pydantic-settings",
+    "numpy",
+    "httpx",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
