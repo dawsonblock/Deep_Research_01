@@ -8,6 +8,9 @@ class MutationType(Enum):
     PARAMETER_CHANGE = "parameter_change"
     PROMPT_CHANGE = "prompt_change"
     ALGORITHM_SWAP = "algorithm_swap"
+    THRESHOLD_TUNING = "threshold_tuning"
+    TEMPLATE_SELECTION = "template_selection"
+    RANKING_WEIGHT = "ranking_weight"
 
 
 @dataclass
@@ -90,3 +93,61 @@ class OperatorMutator:
     @property
     def history(self) -> list[MutationRecord]:
         return list(self._history)
+
+    def tune_threshold(
+        self,
+        operator_name: str,
+        threshold_name: str,
+        old_value: float,
+        new_value: float,
+        reason: str = "",
+    ) -> MutationRecord:
+        """Mutate a threshold parameter within bounded range."""
+        clamped = max(0.0, min(1.0, new_value))
+        record = MutationRecord(
+            operator_name=operator_name,
+            mutation_type=MutationType.THRESHOLD_TUNING,
+            before={threshold_name: old_value},
+            after={threshold_name: clamped},
+            reason=reason,
+        )
+        self._history.append(record)
+        return record
+
+    def select_template(
+        self,
+        operator_name: str,
+        old_template: str,
+        new_template: str,
+        reason: str = "",
+    ) -> MutationRecord:
+        """Switch the prompt template used by an operator."""
+        record = MutationRecord(
+            operator_name=operator_name,
+            mutation_type=MutationType.TEMPLATE_SELECTION,
+            before={"template": old_template},
+            after={"template": new_template},
+            reason=reason,
+        )
+        self._history.append(record)
+        return record
+
+    def adjust_ranking_weight(
+        self,
+        operator_name: str,
+        weight_name: str,
+        old_weight: float,
+        new_weight: float,
+        reason: str = "",
+    ) -> MutationRecord:
+        """Adjust a ranking weight, clamped to [0.0, 1.0]."""
+        clamped = max(0.0, min(1.0, new_weight))
+        record = MutationRecord(
+            operator_name=operator_name,
+            mutation_type=MutationType.RANKING_WEIGHT,
+            before={weight_name: old_weight},
+            after={weight_name: clamped},
+            reason=reason,
+        )
+        self._history.append(record)
+        return record
