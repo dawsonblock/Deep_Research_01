@@ -31,7 +31,21 @@ class ExperimentScheduler:
 
     def submit(self, spec: ExperimentSpec, priority: int = 0) -> ScheduledExperiment:
         item = ScheduledExperiment(spec=spec, priority=priority)
-        self._queue.append(item)
+        # Insert into the queue so that higher-priority experiments are dispatched first.
+        # For equal priority, preserve FIFO order.
+        if not self._queue:
+            self._queue.append(item)
+        else:
+            insert_index = None
+            for idx, existing in enumerate(self._queue):
+                if existing.priority < item.priority:
+                    insert_index = idx
+                    break
+            if insert_index is None:
+                # No lower-priority item found; append to preserve order among >= priority items.
+                self._queue.append(item)
+            else:
+                self._queue.insert(insert_index, item)
         return item
 
     def next(self) -> ScheduledExperiment | None:
