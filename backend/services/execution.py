@@ -9,6 +9,15 @@ from backend.services.project_state import project_state_service
 from backend.services.tasks import task_service
 from backend.utils import dumps, loads, new_id, now_ts
 
+# Canonical runtime imports (Step 5 — mirror runs into canonical registry)
+from research_engine.core.runtime.run_registry import RunRegistry, RunStatus
+from research_engine.core.runtime.artifact_validator import ArtifactValidator
+from research_engine.core.runtime.postcondition_verifier import PostconditionVerifier
+
+_canonical_registry = RunRegistry()
+_canonical_validator = ArtifactValidator()
+_canonical_verifier = PostconditionVerifier()
+
 
 class ExecutionService:
     def create_node(
@@ -89,6 +98,15 @@ class ExecutionService:
             self._mark_status(node['id'], 'failed')
             task_service.update_status(node['task_id'], 'failed')
             return {'error': f'unknown operator: {node["operator"]}', 'node': node}
+
+        # ── canonical run start ──────────────────────────────────────
+        canonical_run = _canonical_registry.create_run(
+            operator_name=node['operator'],
+            inputs={'node_id': node['id'], 'project_id': project_id},
+            metadata={'task_id': node['task_id']},
+        )
+        _canonical_registry.mark_running(canonical_run.run_id)
+
         self._mark_status(node['id'], 'running')
         task_service.update_status(node['task_id'], 'running')
         context = self._build_context(node)
@@ -105,6 +123,31 @@ class ExecutionService:
             revision_of_artifact_id=result.get('revision_of_artifact_id'),
             revision_note=result.get('revision_note'),
         )
+
+        # ── canonical artifact validation ────────────────────────────
+        validation = _canonical_validator.validate(
+            artifact['id'], artifact['type'], artifact['data'],
+        )
+        # ── canonical postcondition verification ─────────────────────
+        pc_report = _canonical_verifier.verify(
+            node['operator'],
+            {'node_id': node['id']},
+            {'artifacts': [{'id': artifact['id'], 'type': artifact['type'], 'data': artifact['data']}]},
+        )
+        # ── canonical run finish ─────────────────────────────────────
+        if validation.valid and pc_report.all_passed:
+            _canonical_registry.mark_success(
+                canonical_run.run_id,
+                postcondition_report=pc_report.to_dict(),
+            )
+        else:
+            status = RunStatus.ARTIFACT_INVALID if not validation.valid else RunStatus.VERIFIED_FAILURE
+            _canonical_registry.mark_failure(
+                canonical_run.run_id, status,
+                error_message="; ".join(validation.errors) if validation.errors else "postcondition failed",
+                postcondition_report=pc_report.to_dict(),
+            )
+
         with db.transaction() as conn:
             conn.execute('INSERT OR IGNORE INTO execution_outputs (node_id, artifact_id) VALUES (?, ?)', (node['id'], artifact['id']))
         self._post_artifact_hooks(node, artifact, context)

@@ -3,6 +3,13 @@ from __future__ import annotations
 from backend.db import db
 from backend.utils import new_id, normalize_text, now_ts
 
+# Canonical graph mirror (Step 7 — mirror writes into canonical graph)
+from research_engine.graph.graph_store import GraphStore
+from research_engine.graph.world_model_adapter import WorldModelAdapter
+
+_canonical_graph = GraphStore()
+_canonical_adapter = WorldModelAdapter(_canonical_graph)
+
 
 class WorldModelService:
     def update_from_artifact(self, artifact: dict) -> dict:
@@ -46,7 +53,13 @@ class WorldModelService:
                 'INSERT INTO claims (id, project_id, artifact_id, content, confidence, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
                 (claim_id, project_id, artifact_id, normalize_text(content), confidence, 'active', ts, ts),
             )
-        return self.get_claim(claim_id)
+        claim = self.get_claim(claim_id)
+        # Mirror to canonical graph
+        try:
+            _canonical_adapter.mirror_claim(claim)
+        except Exception:
+            pass  # canonical mirror is best-effort; never break backend flow
+        return claim
 
     def get_claim(self, claim_id: str) -> dict | None:
         row = db.conn.execute('SELECT * FROM claims WHERE id = ?', (claim_id,)).fetchone()
@@ -74,7 +87,13 @@ class WorldModelService:
                 'INSERT INTO hypotheses (id, project_id, artifact_id, statement, prediction, confidence, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
                 (hypothesis_id, project_id, artifact_id, normalize_text(statement), normalize_text(prediction), confidence, 'active', ts, ts),
             )
-        return self.get_hypothesis(hypothesis_id)
+        hypothesis = self.get_hypothesis(hypothesis_id)
+        # Mirror to canonical graph
+        try:
+            _canonical_adapter.mirror_hypothesis(hypothesis)
+        except Exception:
+            pass  # canonical mirror is best-effort
+        return hypothesis
 
     def get_hypothesis(self, hypothesis_id: str) -> dict | None:
         row = db.conn.execute('SELECT * FROM hypotheses WHERE id = ?', (hypothesis_id,)).fetchone()
