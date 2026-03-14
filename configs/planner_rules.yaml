@@ -1,0 +1,26 @@
+# Planner rules configuration
+rules:
+  - name: resolve_conflicts
+    action: detect_conflicts
+    priority: 10
+    description: "Resolve conflicts when unresolved contradictions exist"
+
+  - name: test_hypotheses
+    action: design_experiment
+    priority: 8
+    description: "Design experiments when hypotheses are untested"
+
+  - name: fill_evidence_gaps
+    action: search_evidence
+    priority: 6
+    description: "Search for evidence when gaps are detected"
+
+  - name: extract_new_claims
+    action: extract_claims
+    priority: 4
+    description: "Extract claims when untested claims exceed threshold"
+
+  - name: default_ingest
+    action: ingest_literature
+    priority: 1
+    description: "Default action: ingest new literature"
