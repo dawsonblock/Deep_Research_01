@@ -124,28 +124,37 @@ class ExecutionService:
             revision_note=result.get('revision_note'),
         )
 
-        # ── canonical artifact validation ────────────────────────────
-        validation = _canonical_validator.validate(
-            artifact['id'], artifact['type'], artifact['data'],
-        )
-        # ── canonical postcondition verification ─────────────────────
-        pc_report = _canonical_verifier.verify(
-            node['operator'],
-            {'node_id': node['id']},
-            {'artifacts': [{'id': artifact['id'], 'type': artifact['type'], 'data': artifact['data']}]},
-        )
-        # ── canonical run finish ─────────────────────────────────────
-        if validation.valid and pc_report.all_passed:
-            _canonical_registry.mark_success(
-                canonical_run.run_id,
-                postcondition_report=pc_report.to_dict(),
+        # ── canonical artifact validation / verification (best-effort) ─
+        try:
+            validation = _canonical_validator.validate(
+                artifact['id'], artifact['type'], artifact['data'],
             )
-        else:
-            status = RunStatus.ARTIFACT_INVALID if not validation.valid else RunStatus.VERIFIED_FAILURE
+            # ── canonical postcondition verification ─────────────────────
+            pc_report = _canonical_verifier.verify(
+                node['operator'],
+                {'node_id': node['id']},
+                {'artifacts': [{'id': artifact['id'], 'type': artifact['type'], 'data': artifact['data']}]},
+            )
+            # ── canonical run finish ─────────────────────────────────────
+            if validation.valid and pc_report.all_passed:
+                _canonical_registry.mark_success(
+                    canonical_run.run_id,
+                    postcondition_report=pc_report.to_dict(),
+                )
+            else:
+                status = RunStatus.ARTIFACT_INVALID if not validation.valid else RunStatus.VERIFIED_FAILURE
+                _canonical_registry.mark_failure(
+                    canonical_run.run_id,
+                    status,
+                    error_message="; ".join(validation.errors) if validation.errors else "postcondition failed",
+                    postcondition_report=pc_report.to_dict(),
+                )
+        except Exception as e:
+            # Best-effort: do not let canonical mirroring break backend flow.
             _canonical_registry.mark_failure(
-                canonical_run.run_id, status,
-                error_message="; ".join(validation.errors) if validation.errors else "postcondition failed",
-                postcondition_report=pc_report.to_dict(),
+                canonical_run.run_id,
+                RunStatus.ARTIFACT_INVALID,
+                error_message=f"canonical validation/postcondition error: {e}",
             )
 
         with db.transaction() as conn:
