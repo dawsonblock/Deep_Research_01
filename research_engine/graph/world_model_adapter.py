@@ -63,12 +63,16 @@ class WorldModelAdapter:
                 "project_id": evidence.get("project_id", ""),
             },
         )
-        if claim_id and claim_id in self.store._nodes:
-            self.store.add_edge(
-                EdgeType.SUPPORTS,
-                source_id=node.node_id,
-                target_id=claim_id,
-            )
+        if claim_id:
+            try:
+                self.store.get_node(claim_id)
+                self.store.add_edge(
+                    EdgeType.SUPPORTS,
+                    source_id=node.node_id,
+                    target_id=claim_id,
+                )
+            except KeyError:
+                pass
         return node.node_id
 
     def mirror_experiment(self, experiment: dict[str, Any]) -> str:
@@ -92,10 +96,14 @@ class WorldModelAdapter:
             node_id=result.get("id"),
             metadata={"project_id": result.get("project_id", "")},
         )
-        if experiment_id and experiment_id in self.store._nodes:
-            self.store.add_edge(
-                EdgeType.PRODUCED,
-                source_id=experiment_id,
-                target_id=node.node_id,
-            )
+        if experiment_id:
+            try:
+                self.store.get_node(experiment_id)
+                self.store.add_edge(
+                    EdgeType.PRODUCED,
+                    source_id=experiment_id,
+                    target_id=node.node_id,
+                )
+            except KeyError:
+                pass
         return node.node_id

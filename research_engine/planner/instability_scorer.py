@@ -112,14 +112,14 @@ class InstabilityScorer:
         """Average number of revisions per tracked entity (higher = more churn)."""
         if self.tracker is None:
             return 0.0
-        total_revisions = 0
-        entity_count = 0
-        for key, history in self.tracker._revisions.items():
-            entity_count += 1
-            total_revisions += len(history)
-        if entity_count == 0:
+        keys = self.tracker.all_entity_keys()
+        if not keys:
             return 0.0
-        return total_revisions / entity_count
+        total_revisions = 0
+        for key in keys:
+            entity_type, entity_id = key.split(":", 1)
+            total_revisions += self.tracker.revision_count(entity_type, entity_id)
+        return total_revisions / len(keys)
 
     def _weakening_trends(self) -> int:
         """Count entities whose latest revision lowered confidence."""

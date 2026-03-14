@@ -110,3 +110,12 @@ class VersionTracker:
     def get_revision(self, revision_id: str) -> Revision | None:
         """Lookup a single revision by ID."""
         return self._by_id.get(revision_id)
+
+    def all_entity_keys(self) -> list[str]:
+        """Return all tracked entity keys (entity_type:entity_id)."""
+        return list(self._revisions.keys())
+
+    def revision_count(self, entity_type: str, entity_id: str) -> int:
+        """Return the number of revisions for an entity."""
+        key = self._key(entity_type, entity_id)
+        return len(self._revisions.get(key, []))

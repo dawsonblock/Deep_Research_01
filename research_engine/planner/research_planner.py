@@ -1,6 +1,7 @@
 """Research planner that decides the next action based on system state."""
 from __future__ import annotations
 from dataclasses import dataclass, field
+from typing import Callable
 
 
 @dataclass
@@ -37,7 +38,7 @@ class ResearchPlanner:
     ]
 
     def __init__(self) -> None:
-        self._rules: list[tuple[callable, str]] = []
+        self._rules: list[tuple[Callable, str]] = []
         self._register_default_rules()
 
     def _register_default_rules(self) -> None:
