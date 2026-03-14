@@ -117,6 +117,8 @@ class InstabilityScorer:
             return 0.0
         total_revisions = 0
         for key in keys:
+            if ":" not in key:
+                continue
             entity_type, entity_id = key.split(":", 1)
             total_revisions += self.tracker.revision_count(entity_type, entity_id)
         return total_revisions / len(keys)
