@@ -1,0 +1,49 @@
+"""Canonical API server for research_engine.
+
+Provides REST endpoints that delegate to research_engine modules.
+Backend API gradually delegates to these canonical routes.
+"""
+from __future__ import annotations
+
+from dataclasses import asdict, dataclass, field
+from typing import Any
+
+
+@dataclass
+class APIResponse:
+    """Standard API response wrapper."""
+    success: bool = True
+    data: Any = None
+    error: str = ""
+
+    def to_dict(self) -> dict[str, Any]:
+        return {"success": self.success, "data": self.data, "error": self.error}
+
+
+class ResearchAPIServer:
+    """Lightweight server that routes requests to canonical modules.
+
+    In production this would be mounted as a FastAPI router; here it
+    exposes the route handlers as plain methods so they can be tested
+    without a running HTTP server.
+    """
+
+    def __init__(self) -> None:
+        self._routes: dict[str, Any] = {}
+
+    def register_route(self, path: str, handler: Any) -> None:
+        self._routes[path] = handler
+
+    def handle(self, path: str, payload: dict[str, Any] | None = None) -> APIResponse:
+        handler = self._routes.get(path)
+        if handler is None:
+            return APIResponse(success=False, error=f"Route not found: {path}")
+        try:
+            result = handler(payload or {})
+            return APIResponse(success=True, data=result)
+        except Exception as exc:
+            return APIResponse(success=False, error=str(exc))
+
+    @property
+    def registered_routes(self) -> list[str]:
+        return sorted(self._routes.keys())
