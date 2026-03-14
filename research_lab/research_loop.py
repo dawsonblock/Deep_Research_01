@@ -1,5 +1,6 @@
 """Autonomous research loop — the main system cycle."""
 from __future__ import annotations
+from collections.abc import Callable
 from dataclasses import dataclass, field
 import time
 
@@ -49,10 +50,10 @@ class ResearchLoop:
     def __init__(self, max_cycles: int = 0) -> None:
         self.max_cycles = max_cycles
         self.state = LoopState()
-        self._action_handlers: dict[str, callable] = {}
+        self._action_handlers: dict[str, Callable] = {}
         self._cycle_log: list[dict] = []
 
-    def register_handler(self, action: str, handler: callable) -> None:
+    def register_handler(self, action: str, handler: Callable) -> None:
         """Register a handler function for a loop action."""
         self._action_handlers[action] = handler
 
