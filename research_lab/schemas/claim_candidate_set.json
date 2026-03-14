@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ClaimCandidateSet",
+  "description": "A set of claim candidates extracted from source passages.",
+  "type": "object",
+  "required": ["candidates"],
+  "properties": {
+    "candidates": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["candidate_id", "text", "source_passage_id"],
+        "properties": {
+          "candidate_id": {
+            "type": "string",
+            "description": "Unique identifier for the claim candidate"
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "description": "The claim text"
+          },
+          "source_passage_id": {
+            "type": "string",
+            "description": "ID of the source passage this claim was extracted from"
+          },
+          "source_offset": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Character offset in the original document"
+          },
+          "claim_type": {
+            "type": "string",
+            "enum": ["assertion", "causal", "correlational", "comparative", "definitional"],
+            "description": "The classification of the claim"
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0.0,
+            "maximum": 1.0,
+            "description": "Extraction confidence score"
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Additional metadata"
+          }
+        }
+      }
+    },
+    "candidate_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "document_id": {
+      "type": "string"
+    }
+  }
+}
