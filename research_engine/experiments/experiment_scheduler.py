@@ -1,7 +1,7 @@
-"""Schedules experiments for concurrent execution."""
+"""Schedules experiments for priority-aware execution."""
 from __future__ import annotations
 from dataclasses import dataclass, field
-from collections import deque
+import bisect
 
 from research_engine.experiments.experiment_spec import ExperimentSpec
 
@@ -22,36 +22,29 @@ class ScheduledExperiment:
 
 
 class ExperimentScheduler:
-    """Queues and dispatches experiments for execution."""
+    """Queues and dispatches experiments for execution.
+
+    Higher-priority experiments are dispatched first.
+    """
 
     def __init__(self) -> None:
-        self._queue: deque[ScheduledExperiment] = deque()
+        # Sorted by priority ascending so highest priority is at the end.
+        self._queue: list[ScheduledExperiment] = []
         self._running: list[ScheduledExperiment] = []
         self._completed: list[ScheduledExperiment] = []
 
     def submit(self, spec: ExperimentSpec, priority: int = 0) -> ScheduledExperiment:
         item = ScheduledExperiment(spec=spec, priority=priority)
-        # Insert into the queue so that higher-priority experiments are dispatched first.
-        # For equal priority, preserve FIFO order.
-        if not self._queue:
-            self._queue.append(item)
-        else:
-            insert_index = None
-            for idx, existing in enumerate(self._queue):
-                if existing.priority < item.priority:
-                    insert_index = idx
-                    break
-            if insert_index is None:
-                # No lower-priority item found; append to preserve order among >= priority items.
-                self._queue.append(item)
-            else:
-                self._queue.insert(insert_index, item)
+        # bisect uses the item's sort order; use the priority as the key.
+        keys = [e.priority for e in self._queue]
+        idx = bisect.bisect_left(keys, priority)
+        self._queue.insert(idx, item)
         return item
 
     def next(self) -> ScheduledExperiment | None:
         if not self._queue:
             return None
-        item = self._queue.popleft()
+        item = self._queue.pop()  # highest priority is at end
         item.status = "running"
         self._running.append(item)
         return item

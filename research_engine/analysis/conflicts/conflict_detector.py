@@ -54,7 +54,7 @@ class ConflictDetector:
                 # Skip edges that reference missing nodes instead of raising.
                 continue
             if src and tgt:
-                severity = edge.metadata.get("weight", 0.5)
+                severity = edge.weight
                 src_preview = self._preview_content(src.content)
                 tgt_preview = self._preview_content(tgt.content)
                 conflicts.append(Conflict(

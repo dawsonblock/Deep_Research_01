@@ -1,4 +1,4 @@
-"""Tests for new research_engine canonical modules (Phases 7–16).
+"""Tests for research_engine canonical modules (Phases 2, 7–16 and end-to-end milestone).
 
 Validates that all migrated modules import cleanly, function correctly,
 and match the expected interfaces.  These tests must NOT require a database
@@ -99,6 +99,22 @@ class TestExperimentScheduler:
         sched = ExperimentScheduler()
         assert sched.next() is None
 
+    def test_priority_ordering(self):
+        from research_engine.experiments.experiment_scheduler import ExperimentScheduler
+        from research_engine.experiments.experiment_spec import ExperimentSpec
+
+        sched = ExperimentScheduler()
+        sched.submit(ExperimentSpec(hypothesis="low"), priority=1)
+        sched.submit(ExperimentSpec(hypothesis="high"), priority=10)
+        sched.submit(ExperimentSpec(hypothesis="mid"), priority=5)
+
+        first = sched.next()
+        assert first is not None
+        assert first.priority == 10
+        second = sched.next()
+        assert second is not None
+        assert second.priority == 5
+
 
 class TestResultEvaluator:
     def test_evaluate_success_above_threshold(self):
@@ -140,8 +156,8 @@ class TestConflictDetector:
         from research_engine.analysis.conflicts.conflict_detector import ConflictDetector
 
         store = GraphStore()
-        store.add_node(NodeType.CLAIM, "Earth is flat", node_id="c1")
-        store.add_node(NodeType.CLAIM, "Earth is round", node_id="c2")
+        store.add_node(NodeType.CLAIM, {"text": "Earth is flat"}, node_id="c1")
+        store.add_node(NodeType.CLAIM, {"text": "Earth is round"}, node_id="c2")
         store.add_edge(EdgeType.CONTRADICTS, "c1", "c2")
 
         detector = ConflictDetector()
@@ -781,18 +797,18 @@ class TestFirstWorkingMilestone:
         artifact_store.store(artifact)
 
         # 3. Claim stored in graph
-        claim_node = graph.add_node(NodeType.CLAIM, "Neural networks scale well", metadata={"confidence": 0.8})
+        claim_node = graph.add_node(NodeType.CLAIM, {"text": "Neural networks scale well"}, metadata={"confidence": 0.8})
         claim_node_id = claim_node.node_id
 
         # 4. Create initial belief revision
         rev = tracker.create_revision("claim", claim_node_id, {"confidence": 0.8, "text": "Neural networks scale well"}, cause="initial_extraction")
 
         # 5. Add evidence
-        evidence_node = graph.add_node(NodeType.EVIDENCE, "Paper X shows scaling", metadata={"strength": 0.7})
+        evidence_node = graph.add_node(NodeType.EVIDENCE, {"text": "Paper X shows scaling"}, metadata={"strength": 0.7})
         graph.add_edge(EdgeType.SUPPORTS, evidence_node.node_id, claim_node_id)
 
         # 6. Add contradicting claim
-        contra_node = graph.add_node(NodeType.CLAIM, "Neural networks hit scaling walls", metadata={"confidence": 0.6})
+        contra_node = graph.add_node(NodeType.CLAIM, {"text": "Neural networks hit scaling walls"}, metadata={"confidence": 0.6})
         contra_node_id = contra_node.node_id
         graph.add_edge(EdgeType.CONTRADICTS, claim_node_id, contra_node_id)
 
@@ -805,7 +821,7 @@ class TestFirstWorkingMilestone:
         generator = HypothesisGenerator()
         hypothesis = generator.from_conflict(conflicts[0])
         assert hypothesis.hypothesis_id
-        graph.add_node(NodeType.HYPOTHESIS, hypothesis.text)
+        graph.add_node(NodeType.HYPOTHESIS, {"text": hypothesis.text})
 
         # 9. Run experiment
         runner = ExperimentRunner()
