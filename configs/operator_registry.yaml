@@ -1,0 +1,18 @@
+# Operator registry configuration
+operators:
+  extraction:
+    - name: document_to_source_passages
+      module: research_lab.operators.extraction.document_to_source_passages
+      class: DocumentToSourcePassages
+
+    - name: source_passages_to_claim_candidates
+      module: research_lab.operators.extraction.source_passages_to_claim_candidates
+      class: SourcePassagesToClaimCandidates
+
+    - name: normalize_claims
+      module: research_lab.operators.extraction.normalize_claims
+      class: NormalizeClaims
+
+  reasoning: []
+  experiments: []
+  analysis: []

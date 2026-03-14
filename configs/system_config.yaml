@@ -1,0 +1,28 @@
+# Research Engine System Configuration
+system:
+  name: "research_engine"
+  version: "0.1.0"
+  log_level: "INFO"
+
+planner:
+  exploration_rate: 0.1
+  min_evidence_count: 2
+
+operators:
+  evolution:
+    low_success_threshold: 0.6
+    low_confidence_threshold: 0.5
+    high_runtime_threshold: 10.0
+
+experiments:
+  max_concurrent: 4
+  confidence_threshold: 0.6
+
+sandbox:
+  cpu_seconds: 30
+  memory_mb: 256
+  network_enabled: false
+
+retrieval:
+  embedding_dim: 128
+  top_k: 5
