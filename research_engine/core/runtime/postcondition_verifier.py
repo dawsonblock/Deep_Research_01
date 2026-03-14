@@ -63,10 +63,15 @@ class PostconditionVerifier:
 
         if not registered:
             # No postconditions registered — pass by default
+            default_check = CheckResult(
+                name="no_postconditions_registered",
+                passed=True,
+                message="No postconditions registered for this operator",
+            )
             return PostconditionReport(
                 operator_name=operator_name,
                 all_passed=True,
-                checks=[CheckResult(name="no_postconditions_registered", passed=True, message="No postconditions registered for this operator")],
+                checks=[default_check],
             )
 
         for check_name, fn in registered:

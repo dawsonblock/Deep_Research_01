@@ -48,7 +48,7 @@ class InstabilityReport:
 class InstabilityScorer:
     """Scores the current knowledge graph for instability.
 
-    Used by the planner to prioritise work on unstable or under-supported
+    Used by the planner to prioritize work on unstable or under-supported
     knowledge rather than following fixed task sequences.
     """
 
