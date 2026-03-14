@@ -4,7 +4,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from research_engine.agents.core.agent_base import AgentBase
 from research_engine.agents.core.agent_registry import AgentRegistry
 from research_engine.agents.core.agent_protocol import (
     AgentRequest,
