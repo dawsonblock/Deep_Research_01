@@ -33,8 +33,12 @@ class ConflictDetector:
         """Find conflicts based on contradiction edges."""
         conflicts: list[Conflict] = []
         for edge in store.query_edges(edge_type=EdgeType.CONTRADICTS):
-            src = store.get_node(edge.source_id)
-            tgt = store.get_node(edge.target_id)
+            try:
+                src = store.get_node(edge.source_id)
+                tgt = store.get_node(edge.target_id)
+            except KeyError:
+                # Skip edges that reference missing nodes instead of raising.
+                continue
             if src and tgt:
                 severity = edge.metadata.get("weight", 0.5)
                 conflicts.append(Conflict(
