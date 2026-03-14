@@ -57,10 +57,12 @@ class ArtifactManifestEntry:
 class RunRecord:
     run_id: str
     operator_name: str
-    status: RunStatus
-    input_hash: str
-    code_version: str
-    environment: EnvironmentSnapshot
+    operator_family: str = ""
+    operator_version: str = ""
+    status: RunStatus = RunStatus.PENDING
+    input_hash: str = ""
+    code_version: str = ""
+    environment: EnvironmentSnapshot = field(default_factory=EnvironmentSnapshot)
     artifact_manifest: list[ArtifactManifestEntry] = field(default_factory=list)
     postcondition_report: dict[str, Any] = field(default_factory=dict)
     created_at: float = 0.0
@@ -69,6 +71,9 @@ class RunRecord:
     duration_seconds: float | None = None
     error_message: str | None = None
     metadata: dict[str, Any] = field(default_factory=dict)
+    artifact_valid: bool | None = None
+    postcondition_passed: bool | None = None
+    downstream_outcome: str = ""
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -112,11 +117,15 @@ class RunRegistry:
         *,
         code_version: str | None = None,
         metadata: dict[str, Any] | None = None,
+        operator_family: str = "",
+        operator_version: str = "",
     ) -> RunRecord:
         run_id = uuid.uuid4().hex
         record = RunRecord(
             run_id=run_id,
             operator_name=operator_name,
+            operator_family=operator_family,
+            operator_version=operator_version,
             status=RunStatus.PENDING,
             input_hash=_hash_inputs(inputs),
             code_version=code_version or _detect_code_version(),
@@ -146,6 +155,8 @@ class RunRegistry:
             record.duration_seconds = record.finished_at - record.started_at
         record.artifact_manifest = artifact_manifest or []
         record.postcondition_report = postcondition_report or {}
+        record.artifact_valid = True
+        record.postcondition_passed = True
         return record
 
     def mark_failure(
@@ -169,6 +180,10 @@ class RunRegistry:
             record.duration_seconds = record.finished_at - record.started_at
         record.error_message = error_message
         record.postcondition_report = postcondition_report or {}
+        if status == RunStatus.ARTIFACT_INVALID:
+            record.artifact_valid = False
+        elif status == RunStatus.VERIFIED_FAILURE:
+            record.postcondition_passed = False
         return record
 
     def get(self, run_id: str) -> RunRecord:

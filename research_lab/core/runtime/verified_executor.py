@@ -60,6 +60,8 @@ class VerifiedExecutor:
         operator_name: str | None = None,
         code_version: str | None = None,
         metadata: dict[str, Any] | None = None,
+        operator_family: str = "",
+        operator_version: str = "",
     ) -> RunRecord:
         name = operator_name or getattr(operator, "name", operator.__class__.__name__)
 
@@ -69,6 +71,8 @@ class VerifiedExecutor:
             inputs=inputs,
             code_version=code_version,
             metadata=metadata,
+            operator_family=operator_family,
+            operator_version=operator_version,
         )
 
         # 2. Mark running
