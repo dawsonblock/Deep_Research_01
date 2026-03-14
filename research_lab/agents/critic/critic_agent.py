@@ -25,6 +25,13 @@ class CriticAgent(AgentBase):
 
     HANDLED_TASKS = {"critique_claim", "critique_experiment", "detect_weak_support", "classify_errors"}
 
+    ACCEPT_THRESHOLD = 0.7
+    REVISE_THRESHOLD = 0.4
+    EXPERIMENT_ACCEPT_THRESHOLD = 0.6
+    LOW_CONFIDENCE_THRESHOLD = 0.3
+    WEAK_SUPPORT_CONFIDENCE = 0.4
+    WEAK_SUPPORT_MIN_EVIDENCE = 2
+
     def __init__(self, agent_id: str = "critic_agent") -> None:
         super().__init__(agent_id=agent_id, agent_type="critic")
 
@@ -65,7 +72,7 @@ class CriticAgent(AgentBase):
             score -= 0.5
 
         confidence = claim.get("confidence", 0)
-        if confidence < 0.3:
+        if confidence < self.LOW_CONFIDENCE_THRESHOLD:
             issues.append(f"Low confidence: {confidence}")
             score -= 0.3
 
@@ -74,7 +81,7 @@ class CriticAgent(AgentBase):
             score -= 0.2
 
         score = max(0.0, score)
-        recommendation = "accept" if score >= 0.7 else ("revise" if score >= 0.4 else "reject")
+        recommendation = "accept" if score >= self.ACCEPT_THRESHOLD else ("revise" if score >= self.REVISE_THRESHOLD else "reject")
 
         return AgentResponse(
             source_agent=self.agent_id,
@@ -109,7 +116,7 @@ class CriticAgent(AgentBase):
                 "target_id": result.get("experiment_id", ""),
                 "issues": issues,
                 "score": score,
-                "recommendation": "accept" if score >= 0.6 else "repeat",
+                "recommendation": "accept" if score >= self.EXPERIMENT_ACCEPT_THRESHOLD else "repeat",
             },
         )
 
@@ -117,7 +124,7 @@ class CriticAgent(AgentBase):
         claims = payload.get("claims", [])
         weak = [
             c for c in claims
-            if c.get("confidence", 0) < 0.4 or c.get("evidence_count", 0) < 2
+            if c.get("confidence", 0) < self.WEAK_SUPPORT_CONFIDENCE or c.get("evidence_count", 0) < self.WEAK_SUPPORT_MIN_EVIDENCE
         ]
         return AgentResponse(
             source_agent=self.agent_id,
