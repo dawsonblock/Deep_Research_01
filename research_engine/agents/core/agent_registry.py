@@ -11,8 +11,6 @@ class AgentRegistry:
 
     def __init__(self) -> None:
         self._agents: dict[str, AgentBase] = {}
-        # task_type → list of agent_ids that can handle it
-        self._capabilities: dict[str, list[str]] = {}
 
     def register(self, agent: AgentBase) -> None:
         """Register an agent and index its capabilities."""
@@ -21,11 +19,6 @@ class AgentRegistry:
     def unregister(self, agent_id: str) -> None:
         """Remove an agent from the registry."""
         self._agents.pop(agent_id, None)
-        for task_type in list(self._capabilities.keys()):
-            self._capabilities[task_type] = [
-                aid for aid in self._capabilities[task_type]
-                if aid != agent_id
-            ]
 
     def get(self, agent_id: str) -> AgentBase | None:
         """Get an agent by ID."""
