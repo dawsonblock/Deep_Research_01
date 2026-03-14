@@ -62,8 +62,11 @@ class TestExperimentRunner:
         from research_engine.experiments.experiment_runner import ExperimentRunner
         from research_engine.experiments.experiment_spec import ExperimentSpec
 
+        def bad_executor(s):
+            raise ValueError("boom")
+
         runner = ExperimentRunner()
-        runner.register_executor("default", lambda s: (_ for _ in ()).throw(ValueError("boom")))
+        runner.register_executor("default", bad_executor)
         spec = ExperimentSpec(hypothesis="test")
         result = runner.run(spec)
         assert result.success is False
