@@ -8,10 +8,11 @@ from __future__ import annotations
 import time
 import uuid
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import Any
 
 
-class TaskStatus:
+class TaskStatus(str, Enum):
     """Task lifecycle states."""
     PENDING = "pending"
     RUNNING = "running"
@@ -40,7 +41,7 @@ class Task:
     operator: str = ""
     inputs: dict[str, Any] = field(default_factory=dict)
     dependencies: list[str] = field(default_factory=list)
-    status: str = TaskStatus.PENDING
+    status: TaskStatus = TaskStatus.PENDING
     priority: int = 5
     metadata: dict[str, Any] = field(default_factory=dict)
     task_id: str = ""
