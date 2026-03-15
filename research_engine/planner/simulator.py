@@ -119,14 +119,14 @@ class PlanGenerator:
         # Full sequence
         plans.append(Plan(
             steps=[Step(operator=op) for op in ops],
-            rationale="Full operator sequence",
+            rationale=f"[Task: {task_description}] Full operator sequence",
         ))
 
         # Reverse sequence (alternative exploration order)
         if len(ops) > 1 and max_plans > 1:
             plans.append(Plan(
                 steps=[Step(operator=op) for op in reversed(ops)],
-                rationale="Reverse operator sequence",
+                rationale=f"[Task: {task_description}] Reverse operator sequence",
             ))
 
         # Each operator solo
@@ -135,7 +135,7 @@ class PlanGenerator:
                 break
             plans.append(Plan(
                 steps=[Step(operator=op)],
-                rationale=f"Single operator: {op}",
+                rationale=f"[Task: {task_description}] Single operator: {op}",
             ))
 
         return plans[:max_plans]
