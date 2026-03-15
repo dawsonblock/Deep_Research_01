@@ -6,11 +6,11 @@ Maps duplicate module families between `research_engine/` (canonical) and `resea
 
 | Canonical (`research_engine/`) | Duplicate (`research_lab/`) |
 |---|---|
-| `research_engine/agents/core/*` | `research_lab/agents/core/*` (not present — agents under `research_lab/agents/synthesis/`) |
-| `research_engine/analysis/conflicts/*` | `research_lab/analysis/conflicts/*` (not present — conflicts in `research_lab/knowledge/`) |
-| `research_engine/analysis/hypotheses/*` | `research_lab/analysis/hypotheses/*` (not present) |
-| `research_engine/core/artifacts/*` | `research_lab/core/artifacts/*` (not present — no `core/` in `research_lab/`) |
-| `research_engine/core/runtime/*` | `research_lab/core/runtime/*` (not present) |
+| `research_engine/agents/core/*` | `research_lab/agents/core/*` |
+| `research_engine/analysis/conflicts/*` | `research_lab/analysis/conflicts/*` |
+| `research_engine/analysis/hypotheses/*` | `research_lab/analysis/hypotheses/*` |
+| `research_engine/core/artifacts/*` | `research_lab/core/artifacts/*` |
+| `research_engine/core/runtime/*` | `research_lab/core/runtime/*` |
 | `research_engine/experiments/*` | `research_lab/experiments/*` |
 | `research_engine/graph/*` | `research_lab/knowledge/graph/*` |
 | `research_engine/planner/*` | `research_lab/planner/*` |
