@@ -1,13 +1,13 @@
 """Tests for temporal belief update integration."""
 import pytest
-from research_lab.knowledge.graph.graph_store import GraphStore
-from research_lab.knowledge.graph.node_types import NodeType
-from research_lab.knowledge.graph.edge_types import EdgeType
+from research_engine.graph.graph_store import GraphStore
+from research_engine.graph.node_types import NodeType
+from research_engine.graph.edge_types import EdgeType
 from research_lab.knowledge.belief.belief_graph import BeliefGraph
 from research_lab.knowledge.belief.belief_update import BeliefUpdater
-from research_lab.knowledge.graph.temporal.version_tracker import VersionTracker
-from research_lab.knowledge.graph.temporal.temporal_graph import TemporalGraph
-from research_lab.knowledge.graph.temporal.belief_timeline import BeliefTimeline
+from research_engine.graph.temporal.version_tracker import VersionTracker
+from research_engine.graph.temporal.temporal_graph import TemporalGraph
+from research_engine.graph.temporal.belief_timeline import BeliefTimeline
 
 
 class TestTemporalBeliefUpdate:

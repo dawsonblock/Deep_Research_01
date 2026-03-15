@@ -1,6 +1,6 @@
 """Tests for the versioned operator registry."""
 import pytest
-from research_lab.operators.evolution.operator_registry import VersionedOperatorRegistry
+from research_engine.operators.evolution.operator_registry import VersionedOperatorRegistry
 
 
 class TestVersionedOperatorRegistry:
