@@ -10,6 +10,10 @@ import time
 import uuid
 from dataclasses import dataclass, field
 from typing import Any, Callable
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -72,10 +76,24 @@ class EventBus:
         event = Event(event_type=event_type, payload=payload or {})
         self._history.append(event)
         for handler in self._subscribers.get(event_type, []):
-            handler(event)
+            try:
+                handler(event)
+            except Exception:
+                logger.exception(
+                    "Error in event handler for event type '%s': %r",
+                    event_type,
+                    handler,
+                )
         # Also dispatch to wildcard subscribers
         for handler in self._subscribers.get("*", []):
-            handler(event)
+            try:
+                handler(event)
+            except Exception:
+                logger.exception(
+                    "Error in wildcard event handler for event type '%s': %r",
+                    event_type,
+                    handler,
+                )
         return event
 
     def history(self, event_type: str | None = None) -> list[Event]:
