@@ -31,10 +31,16 @@ class RuntimeResult:
         artifacts: Artifacts produced by the operator.
         evaluation: Evaluation result from the experiment evaluator.
         replan: Replanning decision (may include follow-up tasks).
-        errors: Errors that occurred during execution.
+        errors: Errors that occurred during execution and should be treated as failures.
+        warnings: Non-fatal issues encountered during execution (e.g., graph update problems).
     """
 
     task: Task | None = None
+    artifacts: list[dict[str, Any]] = field(default_factory=list)
+    evaluation: EvaluationResult | None = None
+    replan: ReplanDecision | None = None
+    errors: list[str] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
     artifacts: list[dict[str, Any]] = field(default_factory=list)
     evaluation: EvaluationResult | None = None
     replan: ReplanDecision | None = None
@@ -139,7 +145,9 @@ class RuntimeController:
             try:
                 self._graph_updater(task.to_dict(), artifacts, evaluation.to_dict())
             except Exception as exc:
-                result.errors.append(f"graph_update_error: {exc}")
+                # Treat graph update issues as non-fatal warnings to avoid
+                # marking the task as failed while still surfacing the problem.
+                result.warnings.append(f"graph_update_error: {exc}")
 
         # 5. Replan
         replan_decision = self._replanner.replan(task, evaluation.score)
