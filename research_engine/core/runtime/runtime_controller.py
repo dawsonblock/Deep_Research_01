@@ -1,11 +1,15 @@
-"""Runtime controller — single execution authority for the research loop.
+"""Runtime controller — high-level orchestrator for the research loop within the
+research_engine runtime.
 
 Owns the entire cycle:
     task → planner → operator execution → artifact creation →
     evaluation → graph update → replanning → new tasks
 
-All execution must route through this controller to prevent layer
-fragmentation across backend, research_engine, and research_lab.
+Within the research_engine layer, research-loop execution is expected to
+route through this controller to prevent fragmentation across backend,
+research_engine, and research_lab, while still allowing lower-level
+executors (such as the canonical runtime executor) to be used where
+appropriate.
 """
 from __future__ import annotations
 
