@@ -1,7 +1,7 @@
 """Tests for operator evaluator."""
 import pytest
-from research_lab.operators.evolution.operator_metrics import OperatorMetricsStore
-from research_lab.operators.evolution.operator_evaluator import OperatorEvaluator
+from research_engine.operators.evolution.operator_metrics import OperatorMetricsStore
+from research_engine.operators.evolution.operator_evaluator import OperatorEvaluator
 
 
 class TestOperatorEvaluator:

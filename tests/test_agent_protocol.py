@@ -1,6 +1,6 @@
 """Tests for agent protocol."""
 import pytest
-from research_lab.agents.core.agent_protocol import (
+from research_engine.agents.core.agent_protocol import (
     AgentRequest,
     AgentResponse,
     RequestType,
