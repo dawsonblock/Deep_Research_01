@@ -134,8 +134,8 @@ class RuntimeController:
         if self._graph_updater is not None:
             try:
                 self._graph_updater(task.to_dict(), artifacts, evaluation.to_dict())
-            except Exception:
-                pass  # best-effort graph update
+            except Exception as exc:
+                result.errors.append(f"graph_update_error: {exc}")
 
         # 5. Replan
         replan_decision = self._replanner.replan(task, evaluation.score)

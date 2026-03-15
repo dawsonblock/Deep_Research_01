@@ -22,7 +22,7 @@ class TaskStatus:
 
 @dataclass
 class Task:
-    """Standardised research task.
+    """Standardized research task.
 
     Attributes:
         task_id: Unique identifier.

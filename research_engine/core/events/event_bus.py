@@ -85,6 +85,9 @@ class EventBus:
         return [e for e in self._history if e.event_type == event_type]
 
     def clear(self) -> None:
-        """Reset history and subscriptions."""
+        """Reset history and remove all subscribers.
+
+        Active subscriptions will need to be re-registered after this call.
+        """
         self._subscribers.clear()
         self._history.clear()
