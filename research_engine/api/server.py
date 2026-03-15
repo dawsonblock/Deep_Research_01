@@ -8,6 +8,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
+from research_engine.api.routes import tasks, artifacts, experiments, search, runtime
+
 
 @dataclass
 class APIResponse:
@@ -30,6 +32,18 @@ class ResearchAPIServer:
 
     def __init__(self) -> None:
         self._routes: dict[str, Any] = {}
+        self._register_default_routes()
+
+    def _register_default_routes(self) -> None:
+        """Register all canonical API routes."""
+        self._routes["/tasks/replan"] = tasks.replan
+        self._routes["/artifacts/create"] = artifacts.create_artifact
+        self._routes["/artifacts/get"] = artifacts.get_artifact
+        self._routes["/artifacts/list"] = artifacts.list_artifacts
+        self._routes["/experiments/run"] = experiments.run_experiment
+        self._routes["/search/nodes"] = search.search_nodes
+        self._routes["/runtime/runs"] = runtime.list_runs
+        self._routes["/runtime/health"] = runtime.health
 
     def register_route(self, path: str, handler: Any) -> None:
         self._routes[path] = handler
