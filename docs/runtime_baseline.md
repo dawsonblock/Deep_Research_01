@@ -6,8 +6,8 @@ Recorded at the start of the `runtime_unification` branch to lock the current be
 
 | Metric | Value |
 |--------|-------|
-| Total tests | 166 |
-| Passing | 166 |
+| Total tests | 225 |
+| Passing | 225 |
 | Failing | 0 |
 | Framework | pytest |
 | Command | `PYTHONPATH=. python -m pytest tests/ -q` |
