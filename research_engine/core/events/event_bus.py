@@ -1,8 +1,8 @@
 """Event bus — lightweight publish / subscribe for runtime observability.
 
 Provides a central channel for recording and reacting to events such as
-``task_started``, ``operator_executed``, ``artifact_created``, and
-``evaluation_completed``.  Subscribers are simple callables.
+``task.started``, ``operator.executed``, ``artifact.created``, and
+``evaluation.completed``.  Subscribers are simple callables.
 """
 from __future__ import annotations
 
