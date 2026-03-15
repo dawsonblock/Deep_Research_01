@@ -113,6 +113,8 @@ class PlanGenerator:
         Each plan combines the provided *operators* in a different order
         or subset to offer the simulator alternative strategies.
         """
+        if max_plans <= 0:
+            return []
         ops = operators or ["collect_sources", "extract_claims", "summarize"]
         plans: list[Plan] = []
 
