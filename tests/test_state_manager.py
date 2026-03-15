@@ -144,3 +144,51 @@ class TestScheduler:
         retried = s.mark_failed("a")
         assert retried is False
         assert s.failed_count == 1
+
+    def test_max_parallel_enforced(self):
+        from research_engine.runtime.scheduler import Scheduler, ScheduledItem
+        s = Scheduler(max_parallel=1)
+        s.submit(ScheduledItem(priority=1, item_id="a"))
+        s.submit(ScheduledItem(priority=2, item_id="b"))
+        item = s.next_ready()
+        assert item.item_id == "a"
+        s.mark_in_flight("a")
+        # Slot is full — next_ready must return None
+        assert s.next_ready() is None
+        assert s.in_flight_count == 1
+        # After completing a, slot frees up
+        s.mark_completed("a")
+        assert s.in_flight_count == 0
+        item = s.next_ready()
+        assert item is not None
+        assert item.item_id == "b"
+
+    def test_max_parallel_multiple_slots(self):
+        from research_engine.runtime.scheduler import Scheduler, ScheduledItem
+        s = Scheduler(max_parallel=2)
+        s.submit(ScheduledItem(priority=1, item_id="a"))
+        s.submit(ScheduledItem(priority=2, item_id="b"))
+        s.submit(ScheduledItem(priority=3, item_id="c"))
+        s.mark_in_flight("a")
+        # One slot left — b should be ready
+        item = s.next_ready()
+        assert item.item_id == "b"
+        s.mark_in_flight("b")
+        # Both slots full
+        assert s.next_ready() is None
+        s.mark_completed("a")
+        item = s.next_ready()
+        assert item.item_id == "c"
+
+    def test_mark_failed_releases_slot(self):
+        from research_engine.runtime.scheduler import Scheduler, ScheduledItem
+        s = Scheduler(max_parallel=1)
+        s.submit(ScheduledItem(priority=1, item_id="a", max_retries=0))
+        s.submit(ScheduledItem(priority=2, item_id="b"))
+        s.mark_in_flight("a")
+        assert s.next_ready() is None
+        s.mark_failed("a", retry=False)
+        assert s.in_flight_count == 0
+        item = s.next_ready()
+        assert item is not None
+        assert item.item_id == "b"

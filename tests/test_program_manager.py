@@ -46,6 +46,19 @@ class TestProgramStrategy:
         ]
         assert strategy.allocate(programs) is None
 
+    def test_budget_tiebreaker(self):
+        from research_engine.programs.program_strategy import ProgramStrategy
+        from research_engine.programs.program_state import ProgramState
+        strategy = ProgramStrategy()
+        programs = [
+            ProgramState(name="A", progress=0.5, budget_remaining=20),
+            ProgramState(name="B", progress=0.5, budget_remaining=80),
+        ]
+        decision = strategy.allocate(programs)
+        assert decision is not None
+        # Same progress — higher budget wins
+        assert decision.program_id == programs[1].program_id
+
 
 class TestProgramScheduler:
     def test_register_and_get(self):

@@ -32,15 +32,15 @@ class ProgramStrategy:
 
         Prefers programs with:
             - Lower progress (more work needed)
-            - Higher remaining budget
+            - Higher remaining budget (as tiebreaker)
             - Active status
         """
         active = [p for p in programs if p.status == "active" and p.budget_remaining > 0]
         if not active:
             return None
 
-        # Simple heuristic: lowest progress with budget
-        best = min(active, key=lambda p: p.progress)
+        # Rank by lowest progress first, then highest budget as tiebreaker
+        best = min(active, key=lambda p: (p.progress, -p.budget_remaining))
         return AllocationDecision(
             program_id=best.program_id,
             action="plan_next",

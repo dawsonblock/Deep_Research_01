@@ -4,7 +4,7 @@ First version with:
     - priority queue
     - dependency resolution
     - retries
-    - safe parallel slots
+    - parallel slot enforcement
 """
 from __future__ import annotations
 
@@ -44,13 +44,18 @@ class Scheduler:
 
     Items are scheduled with a priority (lower = runs first) and optional
     dependencies.  An item is only ready when all its dependencies have
-    been marked as completed.
+    been marked as completed and there is a free parallel slot.
+
+    ``max_parallel`` limits how many items can be in-flight at once.
+    Call ``mark_in_flight`` after ``next_ready`` returns an item, and
+    ``mark_completed`` / ``mark_failed`` when execution finishes.
     """
 
     def __init__(self, max_parallel: int = 1) -> None:
         self._queue: list[ScheduledItem] = []
         self._completed: set[str] = set()
         self._failed: set[str] = set()
+        self._in_flight: set[str] = set()
         self.max_parallel = max_parallel
 
     def submit(self, item: ScheduledItem) -> None:
@@ -60,23 +65,40 @@ class Scheduler:
     def next_ready(self) -> ScheduledItem | None:
         """Return the highest-priority item whose dependencies are met.
 
-        Does not remove the item from the queue — call `mark_completed`
-        or `mark_failed` after execution.
+        Returns ``None`` when no item is ready or when the in-flight set
+        has reached ``max_parallel``.  The item is **not** removed from the
+        queue — call ``mark_in_flight`` to claim a slot, then
+        ``mark_completed`` or ``mark_failed`` after execution.
         """
-        for item in sorted(self._queue):
+        if len(self._in_flight) >= self.max_parallel:
+            return None
+        # Walk the heap in priority order without a full re-sort.
+        # heapq guarantees _queue[0] is the smallest, but not a sorted
+        # order for the rest, so we use heapq.nsmallest which is O(n)
+        # for the common case (n == queue length, k == queue length)
+        # but avoids mutating the heap.
+        for item in heapq.nsmallest(len(self._queue), self._queue):
+            if item.item_id in self._in_flight:
+                continue
             deps_met = all(d in self._completed for d in item.dependencies)
             if deps_met and item.item_id not in self._completed and item.item_id not in self._failed:
                 return item
         return None
 
+    def mark_in_flight(self, item_id: str) -> None:
+        """Claim a parallel slot for an item returned by ``next_ready``."""
+        self._in_flight.add(item_id)
+
     def mark_completed(self, item_id: str) -> None:
-        """Mark an item as successfully completed."""
+        """Mark an item as successfully completed and release its slot."""
         self._completed.add(item_id)
+        self._in_flight.discard(item_id)
         self._queue = [i for i in self._queue if i.item_id != item_id]
         heapq.heapify(self._queue)
 
     def mark_failed(self, item_id: str, retry: bool = True) -> bool:
         """Mark an item as failed. Returns True if retried, False if exhausted."""
+        self._in_flight.discard(item_id)
         for item in self._queue:
             if item.item_id == item_id:
                 if retry and item.retries < item.max_retries:
@@ -92,6 +114,10 @@ class Scheduler:
     @property
     def pending_count(self) -> int:
         return len(self._queue)
+
+    @property
+    def in_flight_count(self) -> int:
+        return len(self._in_flight)
 
     @property
     def completed_count(self) -> int:
