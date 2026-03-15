@@ -5,14 +5,14 @@ from __future__ import annotations
 import pytest
 from typing import Any
 
-from research_lab.core.runtime.run_registry import RunRegistry, RunStatus
-from research_lab.core.runtime.artifact_validator import ArtifactValidator
-from research_lab.core.runtime.postcondition_verifier import (
+from research_engine.core.runtime.run_registry import RunRegistry, RunStatus
+from research_engine.core.runtime.artifact_validator import ArtifactValidator
+from research_engine.core.runtime.postcondition_verifier import (
     PostconditionVerifier,
     output_not_empty,
     output_matches_expected_type,
 )
-from research_lab.core.runtime.verified_executor import VerifiedExecutor
+from research_engine.core.runtime.verified_executor import VerifiedExecutor
 
 
 def _good_operator(inputs: dict[str, Any]) -> dict[str, Any]:
