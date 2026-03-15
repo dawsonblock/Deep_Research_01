@@ -1,7 +1,7 @@
 """Tests for the belief timeline."""
 import pytest
-from research_lab.knowledge.graph.temporal.version_tracker import VersionTracker
-from research_lab.knowledge.graph.temporal.belief_timeline import BeliefTimeline
+from research_engine.graph.temporal.version_tracker import VersionTracker
+from research_engine.graph.temporal.belief_timeline import BeliefTimeline
 
 
 class TestBeliefTimeline:

@@ -13,9 +13,9 @@ from research_lab.operators.extraction.source_passages_to_claim_candidates impor
     SourcePassagesToClaimCandidates,
 )
 from research_lab.operators.extraction.normalize_claims import NormalizeClaims
-from research_lab.core.runtime.artifact_validator import ArtifactValidator
-from research_lab.core.runtime.verified_executor import VerifiedExecutor
-from research_lab.core.runtime.run_registry import RunStatus
+from research_engine.core.runtime.artifact_validator import ArtifactValidator
+from research_engine.core.runtime.verified_executor import VerifiedExecutor
+from research_engine.core.runtime.run_registry import RunStatus
 
 
 SAMPLE_PAPER = """

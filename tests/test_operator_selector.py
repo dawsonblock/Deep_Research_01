@@ -1,9 +1,9 @@
 """Tests for operator selector."""
 import pytest
-from research_lab.operators.evolution.operator_registry import VersionedOperatorRegistry
-from research_lab.operators.evolution.operator_metrics import OperatorMetricsStore
-from research_lab.operators.evolution.operator_evaluator import OperatorEvaluator
-from research_lab.operators.evolution.operator_selector import OperatorSelector
+from research_engine.operators.evolution.operator_registry import VersionedOperatorRegistry
+from research_engine.operators.evolution.operator_metrics import OperatorMetricsStore
+from research_engine.operators.evolution.operator_evaluator import OperatorEvaluator
+from research_engine.operators.evolution.operator_selector import OperatorSelector
 
 
 class TestOperatorSelector:

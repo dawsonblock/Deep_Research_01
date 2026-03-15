@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from research_lab.core.runtime.run_registry import (
+from research_engine.core.runtime.run_registry import (
     RunRegistry,
     RunStatus,
     _hash_inputs,

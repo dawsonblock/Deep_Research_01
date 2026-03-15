@@ -1,8 +1,8 @@
 """Tests for agent router."""
 import pytest
-from research_lab.agents.core.agent_registry import AgentRegistry
-from research_lab.agents.core.agent_router import AgentRouter
-from research_lab.agents.core.agent_protocol import AgentRequest, RequestType
+from research_engine.agents.core.agent_registry import AgentRegistry
+from research_engine.agents.core.agent_router import AgentRouter
+from research_engine.agents.core.agent_protocol import AgentRequest, RequestType
 from research_lab.agents.reader.reader_agent import ReaderAgent
 from research_lab.agents.evidence.evidence_agent import EvidenceAgent
 from research_lab.agents.critic.critic_agent import CriticAgent

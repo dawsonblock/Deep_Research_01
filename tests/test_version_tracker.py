@@ -1,6 +1,6 @@
 """Tests for the temporal version tracker."""
 import pytest
-from research_lab.knowledge.graph.temporal.version_tracker import VersionTracker
+from research_engine.graph.temporal.version_tracker import VersionTracker
 
 
 class TestVersionTracker:

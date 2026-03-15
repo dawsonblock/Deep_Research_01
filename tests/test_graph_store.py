@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import pytest
 
-from research_lab.knowledge.graph.graph_store import GraphStore
-from research_lab.knowledge.graph.node_types import NodeType
-from research_lab.knowledge.graph.edge_types import EdgeType
+from research_engine.graph.graph_store import GraphStore
+from research_engine.graph.node_types import NodeType
+from research_engine.graph.edge_types import EdgeType
 
 
 class TestGraphStore:
