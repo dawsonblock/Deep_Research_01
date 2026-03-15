@@ -41,6 +41,8 @@ class Replanner:
         * score < ``retry_threshold`` → retry the same task.
         * score < ``expand_threshold`` → add supplementary tasks.
         * score >= ``expand_threshold`` → accept and move on.
+
+    The thresholds must satisfy ``0 <= retry_threshold <= expand_threshold <= 1``.
     """
 
     def __init__(
@@ -48,6 +50,21 @@ class Replanner:
         retry_threshold: float = 0.3,
         expand_threshold: float = 0.6,
     ) -> None:
+        if not (0.0 <= retry_threshold <= 1.0):
+            raise ValueError(
+                f"retry_threshold must be in [0, 1], got {retry_threshold!r}"
+            )
+        if not (0.0 <= expand_threshold <= 1.0):
+            raise ValueError(
+                f"expand_threshold must be in [0, 1], got {expand_threshold!r}"
+            )
+        if retry_threshold > expand_threshold:
+            raise ValueError(
+                "retry_threshold must be <= expand_threshold; "
+                f"got retry_threshold={retry_threshold!r}, "
+                f"expand_threshold={expand_threshold!r}"
+            )
+
         self.retry_threshold = retry_threshold
         self.expand_threshold = expand_threshold
 
