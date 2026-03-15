@@ -48,17 +48,16 @@ class BeliefUpdater:
 
         support = 0.0
         contradiction = 0.0
-        for edge in self._graph.query_edges():
-            if edge.target_id == claim_id:
-                try:
-                    source = self._graph.get_node(edge.source_id)
-                except KeyError:
-                    continue
-                w = edge.metadata.get("weight", 1.0)
-                if edge.edge_type == EdgeType.SUPPORTS:
-                    support += source.metadata.get("confidence", 0.5) * w
-                elif edge.edge_type == EdgeType.CONTRADICTS:
-                    contradiction += source.metadata.get("confidence", 0.5) * w
+        for edge in self._graph.query_edges(target_id=claim_id):
+            try:
+                source = self._graph.get_node(edge.source_id)
+            except KeyError:
+                continue
+            w = edge.metadata.get("weight", 1.0)
+            if edge.edge_type == EdgeType.SUPPORTS:
+                support += source.metadata.get("confidence", 0.5) * w
+            elif edge.edge_type == EdgeType.CONTRADICTS:
+                contradiction += source.metadata.get("confidence", 0.5) * w
 
         total = support + contradiction
         new_confidence = support / total if total > 0 else 0.5
