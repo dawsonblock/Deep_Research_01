@@ -72,11 +72,10 @@ class Scheduler:
         """
         if len(self._in_flight) >= self.max_parallel:
             return None
-        # Walk the heap in priority order without a full re-sort.
-        # heapq guarantees _queue[0] is the smallest, but not a sorted
-        # order for the rest, so we use heapq.nsmallest which is O(n)
-        # for the common case (n == queue length, k == queue length)
-        # but avoids mutating the heap.
+        # Walk items in priority order.  We use heapq.nsmallest which,
+        # for k == len(queue), has the same O(n log n) cost as sorted()
+        # but avoids mutating the underlying heap.  A future optimisation
+        # could pop/push to keep it O(log n) for the common case.
         for item in heapq.nsmallest(len(self._queue), self._queue):
             if item.item_id in self._in_flight:
                 continue
